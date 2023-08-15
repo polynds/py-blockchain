@@ -5,15 +5,18 @@
     <title>BlockChain</title>
     <style>
         .content {
+            cursor: pointer;
             padding-left: 20px;
             padding-right: 20px;
         }
 
         .horizontal-list {
-            width: 70%;
-            height: 100px;
+            width: 100%;
+            height: 120px;
             overflow-x: auto;
             white-space: nowrap;
+            padding: 15px;
+            min-width: 800px;
         }
 
         .horizontal-item {
@@ -26,16 +29,42 @@
             background: linear-gradient(21deg, rgba(255, 188, 136, 0.8), rgba(255, 188, 136, 0.2) 10.71%), linear-gradient(71.2deg, rgba(255, 152, 150, 0.8), rgba(255, 255, 255, 0) 70.71%), linear-gradient(284.8deg, rgba(255, 99, 122, 0.8), rgba(255, 188, 136, 0.2) 70.71%), linear-gradient(37deg, rgba(255, 99, 122, 0.8), rgba(255, 153, 143, 0.2) 70.71%);
         }
 
+        .horizontal-item span{
+            color: white;
+        }
+        @keyframes enlarge {
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.2);
+            }
+        }
+
+        .horizontal-item:hover {
+            animation: enlarge 0.5s ease;
+        }
+
         .horizontal-item-detail {
             width: 80px;
             height: 80px;
             display: flex;
             justify-content: center;
             align-items: center;
+             user-select: none;
         }
 
         .horizontal-item + .horizontal-item {
             border-left: 1px solid #fff;
+        }
+
+        .blackBlock {
+            width: 10px;
+            height: 10px;
+            margin: 10px auto;
+            border-radius: 50px;
+            background-color: white;
         }
 
         .main {
@@ -45,7 +74,8 @@
         }
 
         .main .left {
-            flex: 1;
+            flex: 0;
+            flex-wrap: wrap;
         }
 
         .main .middle {
@@ -58,15 +88,16 @@
             min-width: 400px;
         }
 
-        .main .right .mint {
-            width: 70px;
-            height: 70px;
+        .main .right .btn {
+            width: 80px;
+            height: 80px;
             background-color: #ddd;
             padding: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
             border-radius: 10px;
+            margin-bottom: 10px;
         }
 
         .result {
@@ -105,24 +136,31 @@
 
 <body>
 <div class="content">
-    <div class="horizontal-list">
+    <div class="horizontal-list" id="container">
         <!--    <div class="horizontal-item" draggable="true"></div>-->
     </div>
 
     <div class="main">
-        <div class="left">
-            <ul>
-                <li>Item 1</li>
-                <li>Item 2</li>
-                <li>Item 3</li>
-            </ul>
-        </div>
+        <!--        <div class="left">-->
+        <!--            <ul>-->
+        <!--                <li>Item 1</li>-->
+        <!--                <li>Item 2</li>-->
+        <!--                <li>Item 3</li>-->
+        <!--            </ul>-->
+        <!--        </div>-->
         <div class="middle">
             <div class="result" id="middleResult"></div>
         </div>
         <div class="right">
-            <div class="mint" id="mint"><span>Mint</span></div>
-            <div class="result" id="mintResult"></div>
+            <div>
+                <div class="btn" id="transactions"><span>Transactions</span></div>
+                <div class="result" id="transactionsResult"></div>
+            </div>
+            <div>
+                <div class="btn" id="mint"><span>Mint</span></div>
+                <div class="result" id="mintResult"></div>
+            </div>
+
         </div>
 
     </div>
@@ -130,6 +168,44 @@
 
 </body>
 <script>
+
+
+    let startX;
+    let scrollLeft;
+    const list = document.getElementById('container');
+
+    list.onmousedown = e => {
+        startX = e.pageX;
+        scrollLeft = list.scrollLeft;
+
+        document.onmousemove = handleMouseMove;
+    }
+
+    const friction = 0.15;
+    let velocity = 0;
+    let lastTime = 0;
+
+    function handleMouseMove(e) {
+
+        const now = Date.now();
+        const dt = now - lastTime;
+
+        // 计算速度
+        const dist = e.pageX - startX;
+        velocity = dist / dt;
+
+        // 滚动且衰减速度
+        list.scrollLeft += velocity * dt;
+        velocity *= friction;
+
+        lastTime = now;
+
+    }
+
+    document.onmouseup = () => {
+        document.onmousemove = null;
+    }
+
     function syntaxHighlight(json) {
         json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
         return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
@@ -148,31 +224,6 @@
             return '<span class="' + cls + '">' + match + '</span>';
         });
     }
-
-
-    const items = document.querySelectorAll('.horizontal-item');
-    let initialLeft;
-    let initialScrollLeft;
-    items.forEach(item => {
-
-        item.ondragstart = e => {
-
-            // 获取初始坐标
-            initialLeft = e.clientX;
-            initialScrollLeft = document.querySelector('.horizontal-list').scrollLeft;
-
-            // 阻止默认行为
-            e.preventDefault();
-        };
-
-        item.ondragend = e => {
-
-            const diffX = e.clientX - initialLeft;
-            document.querySelector('.horizontal-list').scrollLeft = initialScrollLeft - diffX;
-
-        };
-
-    });
 
 
     function ajaxGet(url) {
@@ -219,6 +270,7 @@
     }
 
 
+    // api start.
     const host = "http://127.0.0.1:9201"
 
     async function mine() {
@@ -239,19 +291,53 @@
         return await ajaxPost(host + '/transactions/new', data);
     }
 
+    // api end.
 
     const mint = document.getElementById('mint');
-
-    // 绑定点击监听
     mint.addEventListener('click', async () => {
         const info = await mine()
-        var jdata = JSON.stringify(JSON.parse(info), null, 4);
+        const jdata = JSON.stringify(JSON.parse(info), null, 4);
         document.getElementById('mintResult').innerHTML = "<pre>" + syntaxHighlight(jdata) + "</pre>";
+        await refreshList()
+        document.getElementById('transactionsResult').innerHTML = ""
+    });
+
+    const transactions = document.getElementById('transactions');
+    transactions.addEventListener('click', async () => {
+        const info = await newTransactions()
+        const jdata = JSON.stringify(JSON.parse(info), null, 4);
+        const transactionsResult = document.getElementById('transactionsResult')
+        const html = transactionsResult.innerHTML
+        transactionsResult.innerHTML = html + "\n<pre>" + syntaxHighlight(jdata) + "</pre>";
+        await refreshList()
     });
 
 
-    function renderInfo(info) {
+    function setBlackBlockBg(index, bgColor) {
+        index--
+        const targetDetail = document.querySelectorAll('.horizontal-item')[Math.max(index, 0)];
+        targetDetail.querySelector('.blackBlock').style.backgroundColor = bgColor;
+    }
 
+    async function showInfo(rowId) {
+        const items = document.querySelectorAll('.horizontal-item');
+        const lastItem = items[rowId - 1];
+        const lastLeft = lastItem.offsetLeft + lastItem.clientWidth;
+        const container = document.getElementById('container');
+        container.style.transition = '2s';
+        container.scrollLeft = lastLeft;
+
+        await renderInfo(rowId)
+    }
+
+    async function renderInfo(rowId) {
+        document.querySelectorAll('.blackBlock')
+            .forEach(item => item.style.backgroundColor = '#fff');
+        setBlackBlockBg(rowId, '#000000');
+
+        const info = await show(rowId)
+        var jdata = JSON.stringify(JSON.parse(info), null, 4);
+        document.getElementById('middleResult').innerHTML = "<pre>" + syntaxHighlight(jdata) + "</pre>";
     }
 
 
@@ -261,11 +347,10 @@
         const data = await chain()
         // 数据处理
         const blocks = JSON.parse(data);
-        console.error(blocks)
         // 生成列表内容
         let listHtml = '';
         blocks.chain.forEach(block => {
-            listHtml += `<div class="horizontal-item"><div class="horizontal-item-detail" row_id="${block.index}"><span>${block.index}</span></div></div>`;
+            listHtml += `<div class="horizontal-item"><div class="horizontal-item-detail" row_id="${block.index}"><span>${block.index}</span></div><div class="blackBlock"></div></div>`;
         });
 
         // 插入页面
@@ -283,15 +368,19 @@
                 // 获取元素的row_id属性
                 const rowId = target.getAttribute('row_id');
 
-                const info = await show(rowId)
-                var jdata = JSON.stringify(JSON.parse(info), null, 4);
-                document.getElementById('middleResult').innerHTML = "<pre>" + syntaxHighlight(jdata) + "</pre>";
+                await renderInfo(rowId)
 
             });
         })
+
+        let lastChain = blocks.chain.reduce((a, b) => b);
+
+        await showInfo(lastChain.index)
     }
 
     refreshList()
+
+
 </script>
 
 </html>

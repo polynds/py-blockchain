@@ -130,13 +130,19 @@ class Blockchain:
         :param amount: Amount
         :return: The index of the Block that will hold this transaction
         """
+        hash = self.hash({
+                'sender': sender,
+                'recipient': recipient,
+                'amount': amount,
+            })
         self.current_transactions.append({
             'sender': sender,
             'recipient': recipient,
             'amount': amount,
+            'hash': hash,
         })
 
-        return self.last_block['index'] + 1
+        return self.last_block['index'] + 1,hash
 
     @property
     def last_block(self):
@@ -239,9 +245,12 @@ def new_transaction():
         return 'Missing values', 400
 
     # Create a new Transaction
-    index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
+    index,hash = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
 
-    response = {'message': f'Transaction will be added to Block {index}'}
+    response = {
+        'message': f'Transaction will be added to Block {index}',
+        'hash': f'Transaction hash {hash}',
+    }
     return jsonify(response), 201
 
 
@@ -257,6 +266,7 @@ def full_chain():
 @app.route('/show/<int:id>', methods=['GET'])
 def show_chain(id):
     index = int(id)
+    index -= 1
     chain = blockchain.chain[index]
 
     dt = datetime.datetime.fromtimestamp(chain['timestamp'])
