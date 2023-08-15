@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>BlockChain</title>
+    <style>
+        .content {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .horizontal-list {
+            width: 70%;
+            height: 100px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .horizontal-item {
+            margin-left: 20px;
+            display: inline-block;
+            animation-timing-function: linear;
+            border-radius: 10px;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(21deg, rgba(255, 188, 136, 0.8), rgba(255, 188, 136, 0.2) 10.71%), linear-gradient(71.2deg, rgba(255, 152, 150, 0.8), rgba(255, 255, 255, 0) 70.71%), linear-gradient(284.8deg, rgba(255, 99, 122, 0.8), rgba(255, 188, 136, 0.2) 70.71%), linear-gradient(37deg, rgba(255, 99, 122, 0.8), rgba(255, 153, 143, 0.2) 70.71%);
+        }
+
+        .horizontal-item-detail {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .horizontal-item + .horizontal-item {
+            border-left: 1px solid #fff;
+        }
+
+        .main {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+        }
+
+        .main .left {
+            flex: 1;
+        }
+
+        .main .middle {
+            flex: 1;
+            min-width: 400px;
+        }
+
+        .main .right {
+            flex: 1;
+            min-width: 400px;
+        }
+
+        .main .right .mint {
+            width: 70px;
+            height: 70px;
+            background-color: #ddd;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+        }
+
+        .result {
+            overflow: auto;
+            overflow-wrap: break-word;
+        }
+    </style>
+    <style type="text/css">
+        pre {
+            outline: 1px solid #ccc;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        .string {
+            color: green;
+        }
+
+        .number {
+            color: darkorange;
+        }
+
+        .boolean {
+            color: blue;
+        }
+
+        .null {
+            color: magenta;
+        }
+
+        .key {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+<div class="content">
+    <div class="horizontal-list">
+        <!--    <div class="horizontal-item" draggable="true"></div>-->
+    </div>
+
+    <div class="main">
+        <div class="left">
+            <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ul>
+        </div>
+        <div class="middle">
+            <div class="result" id="middleResult"></div>
+        </div>
+        <div class="right">
+            <div class="mint" id="mint"><span>Mint</span></div>
+            <div class="result" id="mintResult"></div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+<script>
+    function syntaxHighlight(json) {
+        json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+            var cls = 'number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'key';
+                } else {
+                    cls = 'string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'boolean';
+            } else if (/null/.test(match)) {
+                cls = 'null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+    }
+
+
+    const items = document.querySelectorAll('.horizontal-item');
+    let initialLeft;
+    let initialScrollLeft;
+    items.forEach(item => {
+
+        item.ondragstart = e => {
+
+            // 获取初始坐标
+            initialLeft = e.clientX;
+            initialScrollLeft = document.querySelector('.horizontal-list').scrollLeft;
+
+            // 阻止默认行为
+            e.preventDefault();
+        };
+
+        item.ondragend = e => {
+
+            const diffX = e.clientX - initialLeft;
+            document.querySelector('.horizontal-list').scrollLeft = initialScrollLeft - diffX;
+
+        };
+
+    });
+
+
+    function ajaxGet(url) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url);
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    resolve(xhr.responseText);
+                } else {
+                    reject(new Error('Request failed!'));
+                }
+            };
+
+            xhr.onerror = () => {
+                reject(new Error('Network Error'));
+            };
+
+            xhr.send();
+        });
+    }
+
+
+    function ajaxPost(url, data) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onload = () => {
+                if (xhr.status === 201) {
+                    resolve(xhr.responseText);
+                } else {
+                    reject(new Error('Request failed!'));
+                }
+            };
+
+            xhr.onerror = () => reject(new Error('Network Error'));
+
+            xhr.send(JSON.stringify(data));
+        });
+    }
+
+
+    const host = "http://127.0.0.1:9201"
+
+    async function mine() {
+        return await ajaxGet(host + '/mine');
+    }
+
+    async function show(id) {
+        return await ajaxGet(host + '/show/' + id);
+    }
+
+    async function chain() {
+        return await ajaxGet(host + '/chain');
+    }
+
+    async function newTransactions() {
+        // 使用方法:
+        const data = {sender: 'John', recipient: '11', amount: 1};
+        return await ajaxPost(host + '/transactions/new', data);
+    }
+
+
+    const mint = document.getElementById('mint');
+
+    // 绑定点击监听
+    mint.addEventListener('click', async () => {
+        const info = await mine()
+        var jdata = JSON.stringify(JSON.parse(info), null, 4);
+        document.getElementById('mintResult').innerHTML = "<pre>" + syntaxHighlight(jdata) + "</pre>";
+    });
+
+
+    function renderInfo(info) {
+
+    }
+
+
+    // 定义刷新列表的方法
+    async function refreshList() {
+
+        const data = await chain()
+        // 数据处理
+        const blocks = JSON.parse(data);
+        console.error(blocks)
+        // 生成列表内容
+        let listHtml = '';
+        blocks.chain.forEach(block => {
+            listHtml += `<div class="horizontal-item"><div class="horizontal-item-detail" row_id="${block.index}"><span>${block.index}</span></div></div>`;
+        });
+
+        // 插入页面
+        document.querySelector('.horizontal-list').innerHTML = listHtml;
+
+
+        const details = document.querySelectorAll('.horizontal-item-detail');
+
+        details.forEach(item => {
+            item.addEventListener('click', async event => {
+
+                // 获取当前点击的元素
+                const target = event.currentTarget;
+
+                // 获取元素的row_id属性
+                const rowId = target.getAttribute('row_id');
+
+                const info = await show(rowId)
+                var jdata = JSON.stringify(JSON.parse(info), null, 4);
+                document.getElementById('middleResult').innerHTML = "<pre>" + syntaxHighlight(jdata) + "</pre>";
+
+            });
+        })
+    }
+
+    refreshList()
+</script>
+
+</html>
