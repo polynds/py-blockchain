@@ -29,9 +29,10 @@
             background: linear-gradient(21deg, rgba(255, 188, 136, 0.8), rgba(255, 188, 136, 0.2) 10.71%), linear-gradient(71.2deg, rgba(255, 152, 150, 0.8), rgba(255, 255, 255, 0) 70.71%), linear-gradient(284.8deg, rgba(255, 99, 122, 0.8), rgba(255, 188, 136, 0.2) 70.71%), linear-gradient(37deg, rgba(255, 99, 122, 0.8), rgba(255, 153, 143, 0.2) 70.71%);
         }
 
-        .horizontal-item span{
+        .horizontal-item span {
             color: white;
         }
+
         @keyframes enlarge {
             0% {
                 transform: scale(1);
@@ -52,7 +53,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-             user-select: none;
+            user-select: none;
         }
 
         .horizontal-item + .horizontal-item {
@@ -91,7 +92,7 @@
         .main .right .btn {
             width: 80px;
             height: 80px;
-            background-color: #ddd;
+            background: linear-gradient(21deg, rgba(255, 188, 136, 0.8), rgba(255, 188, 136, 0.2) 10.71%), linear-gradient(71.2deg, rgba(255, 152, 150, 0.8), rgba(255, 255, 255, 0) 70.71%), linear-gradient(284.8deg, rgba(255, 99, 122, 0.8), rgba(255, 188, 136, 0.2) 70.71%), linear-gradient(37deg, rgba(255, 99, 122, 0.8), rgba(255, 153, 143, 0.2) 70.71%);
             padding: 10px;
             display: flex;
             justify-content: center;
@@ -350,7 +351,7 @@
         // 生成列表内容
         let listHtml = '';
         blocks.chain.forEach(block => {
-            listHtml += `<div class="horizontal-item"><div class="horizontal-item-detail" row_id="${block.index}"><span>${block.index}</span></div><div class="blackBlock"></div></div>`;
+            listHtml += `<div class="horizontal-item"><div class="horizontal-item-detail" row_id="${block.index}"><span>Block</br>${block.index}</span></div><div class="blackBlock"></div></div>`;
         });
 
         // 插入页面
