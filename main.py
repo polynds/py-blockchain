@@ -139,7 +139,7 @@ class Blockchain:
             'sender': sender,
             'recipient': recipient,
             'amount': amount,
-            'hash': hash,
+            'tx_hash': hash,
         })
 
         return self.last_block['index'] + 1,hash
@@ -249,7 +249,7 @@ def new_transaction():
 
     response = {
         'message': f'Transaction will be added to Block {index}',
-        'hash': f'Transaction hash {hash}',
+        'TransactionHash': f'{hash}',
     }
     return jsonify(response), 201
 
