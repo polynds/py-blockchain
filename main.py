@@ -131,10 +131,10 @@ class Blockchain:
         :return: The index of the Block that will hold this transaction
         """
         hash = self.hash({
-                'sender': sender,
-                'recipient': recipient,
-                'amount': amount,
-            })
+            'sender': sender,
+            'recipient': recipient,
+            'amount': amount,
+        })
         self.current_transactions.append({
             'sender': sender,
             'recipient': recipient,
@@ -142,7 +142,7 @@ class Blockchain:
             'tx_hash': hash,
         })
 
-        return self.last_block['index'] + 1,hash
+        return self.last_block['index'] + 1, hash
 
     @property
     def last_block(self):
@@ -245,7 +245,7 @@ def new_transaction():
         return 'Missing values', 400
 
     # Create a new Transaction
-    index,hash = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
+    index, hash = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
 
     response = {
         'message': f'Transaction will be added to Block {index}',
@@ -259,6 +259,19 @@ def full_chain():
     response = {
         'chain': blockchain.chain,
         'length': len(blockchain.chain),
+    }
+    return jsonify(response), 200
+
+
+@app.route('/nodes', methods=['GET'])
+def full_nodes():
+    nodes = []
+    for node in blockchain.nodes:
+        nodes.append(node)
+
+    response = {
+        'nodes': nodes,
+        'length': len(nodes),
     }
     return jsonify(response), 200
 
@@ -316,7 +329,7 @@ def consensus():
 
 
 @app.route('/')
-def get_html():
+def index():
     with open('templates/index.html', 'r') as f:
         html_data = f.read()
 

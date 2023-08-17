@@ -89,7 +89,7 @@
             min-width: 400px;
         }
 
-        .main .right .btn {
+        .btn {
             width: 80px;
             height: 80px;
             background: linear-gradient(21deg, rgba(255, 188, 136, 0.8), rgba(255, 188, 136, 0.2) 10.71%), linear-gradient(71.2deg, rgba(255, 152, 150, 0.8), rgba(255, 255, 255, 0) 70.71%), linear-gradient(284.8deg, rgba(255, 99, 122, 0.8), rgba(255, 188, 136, 0.2) 70.71%), linear-gradient(37deg, rgba(255, 99, 122, 0.8), rgba(255, 153, 143, 0.2) 70.71%);
@@ -104,6 +104,17 @@
         .result {
             overflow: auto;
             overflow-wrap: break-word;
+        }
+
+        .node {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+        }
+
+        .nodeLeft, .nodeRight {
+            flex: 1;
+            min-width: 400px;
         }
     </style>
     <style type="text/css">
@@ -137,6 +148,23 @@
 
 <body>
 <div class="content">
+
+<!--    <div class="node">-->
+<!--        <div class="nodeLeft">-->
+<!--            <div>节点列表</div>-->
+<!--            <ul id="nodeList">-->
+<!--                <li>Item 1</li>-->
+<!--                <li>Item 2</li>-->
+<!--                <li>Item 3</li>-->
+<!--            </ul>-->
+<!--        </div>-->
+<!--        <div class="nodeRight">-->
+<!--            <label for="nodeInput">节点地址：</label><input type="text" id="nodeInput"/>-->
+<!--            <div class="btn" id="register"><span>Register</span></div>-->
+<!--            <div class="result" id="registerResult"></div>-->
+<!--        </div>-->
+<!--    </div>-->
+    <div>区块链</div>
     <div class="horizontal-list" id="container">
         <!--    <div class="horizontal-item" draggable="true"></div>-->
     </div>
@@ -150,6 +178,7 @@
         <!--            </ul>-->
         <!--        </div>-->
         <div class="middle">
+            <div>区块详情</div>
             <div class="result" id="middleResult"></div>
         </div>
         <div class="right">
@@ -292,7 +321,45 @@
         return await ajaxPost(host + '/transactions/new', data);
     }
 
+    async function nodeRegister(nodeName) {
+        // 使用方法:
+        const data = {nodes: [nodeName]};
+        return await ajaxPost(host + '/nodes/register', data);
+    }
+
+    async function nodeList() {
+        return await ajaxGet(host + '/nodes');
+    }
+
     // api end.
+
+    async function refreshNodeList() {
+        const data = await nodeList()
+        console.error(data)
+        // 数据处理
+        const list = JSON.parse(data);
+        // 生成列表内容
+        let listHtml = '';
+        list.nodes.forEach(node => {
+            listHtml += "<li>" + node + "</li>";
+        });
+
+        // 插入页面
+        document.getElementById('nodeList').innerHTML = listHtml;
+    }
+
+    // document.getElementById('nodeList').innerHTML = "<li>" + host + "</li>";
+    // refreshNodeList()
+
+    // const register = document.getElementById('register');
+    // register.addEventListener('click', async () => {
+    //     const nodeInput = document.getElementById('nodeInput');
+    //     const nodeName = nodeInput.value
+    //     const info = await nodeRegister(nodeName)
+    //     const jdata = JSON.stringify(JSON.parse(info), null, 4);
+    //     document.getElementById('registerResult').innerHTML = "<pre>" + syntaxHighlight(jdata) + "</pre>";
+    //     await refreshNodeList()
+    // });
 
     const mint = document.getElementById('mint');
     mint.addEventListener('click', async () => {
