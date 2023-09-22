@@ -1,5 +1,6 @@
 from web3 import Web3
 import ccxt
+from eth_abi import abi
 
 
 def gwei_to_usd(gwei, gas_limit, ticker):
@@ -37,6 +38,10 @@ if __name__ == '__main__':
     print('Gas price: ', gas_price_in_gwei, 'Gwei')
     print('Gas price: ', round(gwei_to_usd(gas_price_in_gwei, gas_limit, 'MATIC/USDT'), 5), '$')
 
+    function_name = ''
+    sendData = ''
+    data = abi.encode()
+
     # Build the transaction
     tx = {
         "nonce": web3.eth.get_transaction_count(address_wallet),
@@ -45,6 +50,7 @@ if __name__ == '__main__':
         "gas": gas_limit,
         "gasPrice": web3.eth.gas_price,
         "chainId": web3.eth.chain_id,
+        "data": data,
     }
 
     # Sign and send tx
